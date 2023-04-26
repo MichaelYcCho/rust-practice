@@ -1,0 +1,4 @@
+[workspace]
+members = [
+    "mars_calc",
+]
