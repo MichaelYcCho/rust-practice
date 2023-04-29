@@ -1,4 +1,5 @@
 [workspace]
 members = [
     "mars_calc",
+    "http_practice",
 ]
