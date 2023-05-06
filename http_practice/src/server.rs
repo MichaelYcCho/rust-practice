@@ -1,3 +1,10 @@
+/*
+crate는 전체 프로젝트의 루트를 가리킨다. 여기선 http_practice를 가리킨다.
+이를 통해 해당 프로젝트의 main.rs의 http나 server에 접근할 수 있다.
+ */
+use crate::http::Request;
+use std::convert::TryFrom; 
+use std::convert::TryInto;
 use std::io::Read;
 use std::net::TcpListener;
 
@@ -27,6 +34,17 @@ impl Server {
                             //  UTF-8로 인코딩된 바이트 슬라이스(&[u8])를 입력 받아, 이를 문자열(String)로 변환하는 작업을 수행
                             println!("Received a request: {}", String::from_utf8_lossy(&buffer));
 
+                            //01. 컴파일러가 바이트 슬라이스로 취급하게 as키워드를 사용함
+                            //Request::try_from(&buffer as &[u8]);
+
+                            //02. 전체 Array가 담긴 byte Slice를 생성함
+                            match Request::try_from(&buffer[..]){
+                                Ok(request) => {},
+                                Err(e) => println!("Failed to parse a request: {}", e),
+                            }
+
+                            //03. TryInto 트레이트를 사용함
+                            //let res: &Result<Request, _> = &buffer[..].try_into();
                         }
                         Err(e) => println!("Failed to read from connection: {}", e),
                     }
