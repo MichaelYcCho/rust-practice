@@ -1,3 +1,4 @@
+use std::io::Read;
 use std::net::TcpListener;
 
 pub struct Server {
@@ -17,14 +18,22 @@ impl Server {
 
         // 반복 될때마다 새로운 연결이 있는지 체크
         loop {
-            match listener.accept(){
-                Ok((stream, addr)) => {
-                    println!("New client: {:?}", addr);
+            match listener.accept() {
+                Ok((mut stream, _)) => {
+                    let mut buffer = [0; 1024]; // 1024 바이트 크기의 배열을 만든다. 임의의 버퍼를 만들어서 클라이언트로부터 읽어들인 데이터를 저장할 것이다.
+                    match stream.read(&mut buffer) {
+                        // 소켓에서 클라이언트가 보낸 모든 바이트를 읽는다.
+                        Ok(_) => {
+                            //  UTF-8로 인코딩된 바이트 슬라이스(&[u8])를 입력 받아, 이를 문자열(String)로 변환하는 작업을 수행
+                            println!("Received a request: {}", String::from_utf8_lossy(&buffer));
+
+                        }
+                        Err(e) => println!("Failed to read from connection: {}", e),
+                    }
                 }
                 Err(e) => {
                     println!("Failed to establish a connection: {}", e);
                 }
-
             }
         }
     }
