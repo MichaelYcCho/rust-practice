@@ -3,7 +3,7 @@ crate는 전체 프로젝트의 루트를 가리킨다. 여기선 http_practice�
 이를 통해 해당 프로젝트의 main.rs의 http나 server에 접근할 수 있다.
  */
 use crate::http::Request;
-use std::convert::TryFrom; 
+use std::convert::TryFrom;
 use std::convert::TryInto;
 use std::io::Read;
 use std::net::TcpListener;
@@ -38,8 +38,8 @@ impl Server {
                             //Request::try_from(&buffer as &[u8]);
 
                             //02. 전체 Array가 담긴 byte Slice를 생성함
-                            match Request::try_from(&buffer[..]){
-                                Ok(request) => {},
+                            match Request::try_from(&buffer[..]) {
+                                Ok(request) => {}
                                 Err(e) => println!("Failed to parse a request: {}", e),
                             }
 
