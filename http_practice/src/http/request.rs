@@ -15,6 +15,7 @@ pub struct Request {
 impl TryFrom<&[u8]> for Request {
     type Error = ParseError;
 
+
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
         // buffer에 있는 byte가 유효한 UTF-8인지 확인
         // 방법1 match 사용
@@ -41,6 +42,22 @@ impl TryFrom<&[u8]> for Request {
         let request = str::from_utf8(buf)?;
 
         unimplemented!()
+    }
+}
+
+
+// GET /search?name=abc&sort=1 HTTP/1.1 로 들어온 request를 파싱한다.
+// return의 첫번째는 원하는 단어이고, 두번째는 남은 문자열이다.
+fn get_next_word(request: &str) -> Option<(&str, &str)>{
+    // 공백을 찾을때 까지 문자열 반복
+    let mut iter = request.chars();
+    loop{
+        // next에 문자열이 없으면 None을 반환한다.
+        let item = iter.next();
+        match item{
+            Some(c) => {}
+            None => break,
+        }
     }
 }
 
