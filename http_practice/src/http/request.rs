@@ -1,4 +1,4 @@
-use super::method::Method;
+use super::method::{Method, MethodError};
 use ::std::str;
 use ::std::str::Utf8Error;
 use std::convert::TryFrom;
@@ -26,11 +26,14 @@ impl TryFrom<&[u8]> for Request {
             return Err(ParseError::InvalidProtocol);
         }
 
+        // parse : 받은 타입을 문자열에서 다른 타입으로 변환, FromStr 트레이트를 구현되어 있어야한다
+        let method: Method = method.parse()?;
+
         unimplemented!()
     }
 }
 
-// GET /search?name=abc&sort=1 HTTP/1.1 로 들어온 request를 파싱한다.
+// GET /search?name=abc&sort=1/r/n HTTP/1.1 로 들어온 request를 파싱한다.
 // return의 첫번째는 원하는 단어이고, 두번째는 남은 문자열이다.
 fn get_next_word(request: &str) -> Option<(&str, &str)> {
     // 공백을 찾을때 까지 문자열 반복
@@ -59,6 +62,13 @@ impl ParseError {
             Self::InvalidProtocol => "Invalid Protocol",
             Self::InvalidMethod => "Invalid Method",
         }
+    }
+}
+
+impl From<MethodError> for ParseError {
+    //MethodError를 파라미터로 받아 ParseError 타입으로 반환한다
+    fn from(_: MethodError) -> Self {
+        Self::InvalidMethod
     }
 }
 
