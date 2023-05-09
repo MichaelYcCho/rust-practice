@@ -4,7 +4,6 @@ crate는 전체 프로젝트의 루트를 가리킨다. 여기선 http_practice�
  */
 use crate::http::Request;
 use std::convert::TryFrom;
-use std::convert::TryInto;
 use std::io::Read;
 use std::net::TcpListener;
 

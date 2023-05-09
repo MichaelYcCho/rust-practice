@@ -17,28 +17,14 @@ impl TryFrom<&[u8]> for Request {
 
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
         // buffer에 있는 byte가 유효한 UTF-8인지 확인
-        // 방법1 match 사용
-        /*
-        match str::from_utf8(buf){
-            Ok(request) => {}
-            Err(_) => return Err(ParseError::InvalidEncoding),
-
-        }
-        */
-
-        // 방법2-1 match +  from_utf8 내부 로직사용
-        /*
-        match str::from_utf8(buf).or(Err(ParseError::InvalidEncoding)) {
-            Ok(request) => {}
-            Err(e) => return Err(e),
-        }
-        */
-
-        // 방법2-2 from_utf8 내부 로직사용
-        // ? -> 오류면 오류를 반환하고, 정상이면 정상을 반환한다.
-        //let request = str::from_utf8(buf).or(Err(ParseError::InvalidEncoding))?;
-        // 여기서 From을 통해 Utf8Error를 만들면 더 간소화할 수 있다.
+        // 위의 request와 아래의 request는 다른 것으로 보아야한다. == 변수 shadowing (로컬변수 이름 재사용)
         let request = str::from_utf8(buf)?;
+        let (path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        // Header 부분
+        let (protocol, _) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        if protocol != "HTTP/1.1" {
+            return Err(ParseError::InvalidProtocol);
+        }
 
         unimplemented!()
     }
@@ -50,12 +36,11 @@ fn get_next_word(request: &str) -> Option<(&str, &str)> {
     // 공백을 찾을때 까지 문자열 반복
     for (i, c) in request.chars().enumerate() {
         // 스페이스가 나오면 현재 인덱스 i까지의 문자열을 반환하고, 남은 문자열을 반환한다.
-        // 이 경우 공백이 1byte라는것을 알기때문에 i+1 이지만, 이모지나 다른 것일경우엔 이를 고려해야한다. 
-        if c == ' '{
-            return Some((&request[..i], &request[i+1..]));
+        // 이 경우 공백이 1byte라는것을 알기때문에 i+1 이지만, 이모지나 다른 것일경우엔 이를 고려해야한다.
+        if c == ' ' || c == '\r' {
+            return Some((&request[..i], &request[i + 1..]));
         }
     }
-
     None
 }
 
