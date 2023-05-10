@@ -19,7 +19,8 @@ impl TryFrom<&[u8]> for Request {
         // buffer에 있는 byte가 유효한 UTF-8인지 확인
         // 위의 request와 아래의 request는 다른 것으로 보아야한다. == 변수 shadowing (로컬변수 이름 재사용)
         let request = str::from_utf8(buf)?;
-        let (path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        let (method, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?; // ok_or는 Option<T>를 Result<T, E>로 변환한다.
+        let (mut path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         // Header 부분
         let (protocol, _) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         if protocol != "HTTP/1.1" {
@@ -28,6 +29,36 @@ impl TryFrom<&[u8]> for Request {
 
         // parse : 받은 타입을 문자열에서 다른 타입으로 변환, FromStr 트레이트를 구현되어 있어야한다
         let method: Method = method.parse()?;
+        let mut query_string = None;
+
+        // 방법1
+        match path.find('?'){
+            Some(i) => {
+                // i는 ?의 인덱스, 따라서 i 이후인 i+1 부터 가져온다
+                // 그리고 여기서 1은 1byte를 의미한다.
+                query_string = Some(&path[i + 1..]);
+                // path를 mut로 변환한 후, ? 이전까지의 문자열을 가져온다.
+                path = &path[..i];
+            }
+            None => {}
+        }
+        
+        // 방법2
+        let q = path.find('?');
+        // some == 값이 있을때만 동작
+        if q.is_some(){
+            // Option이 None이면 패닉에 빠지기 때문에 unwrap을 사용한다.
+            let i = q.unwrap();
+            query_string = Some(&path[i + 1..]);
+            path = &path[..i];
+        }
+
+
+        // 방법 3
+        if let Some(i) = path.find('?'){
+            query_string = Some(&path[i + 1..]);
+            path = &path[..i];
+        }
 
         unimplemented!()
     }
