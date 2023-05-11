@@ -5,14 +5,14 @@ use std::convert::TryFrom;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
-pub struct Request {
-    path: String,
-    query_string: Option<String>,
+pub struct Request<'buf> {
+    path: &'buf str,
+    query_string: Option<&'buf str>,
     method: Method,
 }
 
 // TryFrom 키워드뒤에 for을 넣고 우리가 Trait를 구현하고자 하는 타입을 넣어준다.
-impl TryFrom<&[u8]> for Request {
+impl<'buf> TryFrom<&[u8]> for Request<'buf> {
     type Error = ParseError;
 
     fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
@@ -31,13 +31,21 @@ impl TryFrom<&[u8]> for Request {
         let method: Method = method.parse()?;
         let mut query_string = None;
 
-        // 방법 3
+
         if let Some(i) = path.find('?') {
+            // to_string() 메서드를 사용하면 &str 타입의 슬라이스를 String 타입으로 변환
             query_string = Some(&path[i + 1..]);
             path = &path[..i];
         }
+        
+        Ok(Self {
+            path: path,
+            query_string,
+            method,
+        })
+        
 
-        unimplemented!()
+
     }
 }
 
