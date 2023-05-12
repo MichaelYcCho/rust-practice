@@ -12,10 +12,10 @@ pub struct Request<'buf> {
 }
 
 // TryFrom 키워드뒤에 for을 넣고 우리가 Trait를 구현하고자 하는 타입을 넣어준다.
-impl<'buf> TryFrom<&[u8]> for Request<'buf> {
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(buf: &'buf [u8]) -> Result<Request<'buf>, Self::Error> {
         // buffer에 있는 byte가 유효한 UTF-8인지 확인
         // 위의 request와 아래의 request는 다른 것으로 보아야한다. == 변수 shadowing (로컬변수 이름 재사용)
         let request = str::from_utf8(buf)?;
@@ -31,21 +31,17 @@ impl<'buf> TryFrom<&[u8]> for Request<'buf> {
         let method: Method = method.parse()?;
         let mut query_string = None;
 
-
         if let Some(i) = path.find('?') {
             // to_string() 메서드를 사용하면 &str 타입의 슬라이스를 String 타입으로 변환
             query_string = Some(&path[i + 1..]);
             path = &path[..i];
         }
-        
+
         Ok(Self {
-            path: path,
+            path,
             query_string,
             method,
         })
-        
-
-
     }
 }
 
