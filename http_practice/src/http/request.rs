@@ -1,4 +1,5 @@
 use super::method::{Method, MethodError};
+use super::QueryString;
 use ::std::str;
 use ::std::str::Utf8Error;
 use std::convert::TryFrom;
@@ -7,7 +8,7 @@ use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 
 pub struct Request<'buf> {
     path: &'buf str,
-    query_string: Option<&'buf str>,
+    query_string: Option<QueryString<'buf>>,
     method: Method,
 }
 
@@ -33,7 +34,7 @@ impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
 
         if let Some(i) = path.find('?') {
             // to_string() 메서드를 사용하면 &str 타입의 슬라이스를 String 타입으로 변환
-            query_string = Some(&path[i + 1..]);
+            query_string = Some(QueryString::from(&path[i + 1..]));
             path = &path[..i];
         }
 
