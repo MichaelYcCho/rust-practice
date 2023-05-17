@@ -1,8 +1,9 @@
 // rocket 크레이트를 사용할 수 있도록 포함하는 것
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
-use rocket::serde::json::{Value, json};
 use rocket::response::status;
+use rocket::serde::json::{json, Value};
 
 #[get("/rustaceans")]
 fn get_rustaceans() -> Value {
@@ -30,20 +31,26 @@ fn delete_rustacean(_id: i32) -> status::NoContent {
     status::NoContent
 }
 
+#[catch(404)]
+fn not_found() -> Value {
+    json!({"status": "error", "reason": "Resource was not found."})
+}
 
 #[rocket::main]
 async fn main() {
     rocket::build()
-    .mount("/", routes![
-        get_rustaceans,
-        view_rustacean,
-        create_rustacean,
-        update_rustacean,
-        delete_rustacean
-    ])
-
-    .launch()
-    .await
-    .unwrap();
+        .mount(
+            "/",
+            routes![
+                get_rustaceans,
+                view_rustacean,
+                create_rustacean,
+                update_rustacean,
+                delete_rustacean
+            ],
+        )
+        .register("/", catchers![not_found])
+        .launch()
+        .await
+        .unwrap();
 }
- 
