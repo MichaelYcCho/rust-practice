@@ -11,7 +11,9 @@ pub struct BasicAuth {
 }
 
 impl BasicAuth {
+    // Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==' 형식의 헤더를 파싱한다.
     fn from_authorization_header(header: &str) -> Option<BasicAuth> {
+        // 헤더를 공백을 기준으로 분리한 후 벡터로 변환한다.
         let split = header.split_ascii_whitespace().collect::<Vec<_>>();
         if split.len() != 2 || split[0] != "Basic" {
             return None;
