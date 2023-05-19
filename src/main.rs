@@ -2,6 +2,8 @@
 #[macro_use]
 extern crate rocket;
 
+use rocket::http::Status;
+use rocket::request::{FromRequest, Outcome, Request};
 use rocket::response::status;
 use rocket::serde::json::{json, Value};
 
@@ -41,13 +43,34 @@ impl BasicAuth {
 
         let (username, password) = (split[0].to_string(), split[1].to_string());
 
-        // username과 password가 모두 성공적으로 추출되면, 이 함수는 Some에 BasicAuth 인스턴스를 포함하여 반환한다. 
+        // username과 password가 모두 성공적으로 추출되면, 이 함수는 Some에 BasicAuth 인스턴스를 포함하여 반환한다.
         Some(BasicAuth { username, password })
     }
 }
 
+// FromRequest 트레이트 : Rocket의 request 개체를 수락하고 결과를 반환
+// BasicAuth의 수명이 Request의 수명과 연관되어 있다는 것을 러스트 컴파일러에게 알려주는 것, BasicAuth 인스턴스는 해당 Request가 유효한 동안만 유효.
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for BasicAuth {
+    type Error = ();
+
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        let auth_header = request.headers().get_one("Authorization");
+        if let Some(auth_header) = auth_header {
+            // 헤더가 존재하면 BasicAuth::from_authorization_header()를 호출하여 BasicAuth 인스턴스를 생성한다.
+            if let Some(auth) = Self::from_authorization_header(auth_header) {
+                // 성공적으로 BasicAuth 인스턴스를 생성하면 Outcome::Success를 반환한다.
+                return Outcome::Success(auth);
+            }
+        }
+
+        // 인증에 실패하면 Outcome::Failure를 반환한다.
+        Outcome::Failure((Status::Unauthorized, ()))
+    }
+}
+
 #[get("/rustaceans")]
-fn get_rustaceans() -> Value {
+fn get_rustaceans(_auth: BasicAuth) -> Value {
     json!([{ "id": 1, "name": "John Doe" }, { "id": 2, "name": "John Doe again" }])
 }
 
