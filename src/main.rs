@@ -26,7 +26,10 @@ impl BasicAuth {
         Self::from_base64_encoded(split[1])
     }
 
+    // Option<T>는 Rust에서 제공하는 열거형(enum)으로, None 또는 Some(T)라는 두 가지 값을 가질 수 있다.
+    // Option<BasicAuth>인 경우, 이 함수가 성공적으로 BasicAuth를 생성하면 Some(BasicAuth)를 반환하고, 그렇지 않으면 None을 반환합니다.
     fn from_base64_encoded(base64_string: &str) -> Option<BasicAuth> {
+        // ? 연산자는 값이 있을경우 Some을 반환하고, None일 경우 None을 반환한 후 함수를 종료한다.
         let decoded = base64::decode(base64_string).ok()?;
         let decoded_str = String::from_utf8(decoded).ok()?;
         let split = decoded_str.split(":").collect::<Vec<_>>();
@@ -38,6 +41,7 @@ impl BasicAuth {
 
         let (username, password) = (split[0].to_string(), split[1].to_string());
 
+        // username과 password가 모두 성공적으로 추출되면, 이 함수는 Some에 BasicAuth 인스턴스를 포함하여 반환한다. 
         Some(BasicAuth { username, password })
     }
 }
