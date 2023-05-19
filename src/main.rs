@@ -95,6 +95,11 @@ fn delete_rustacean(_id: i32) -> status::NoContent {
     status::NoContent
 }
 
+#[catch(401)]
+fn unauthorized() -> Value {
+    json!("Invalid/Missing authorization")
+}
+
 #[catch(404)]
 fn not_found() -> Value {
     json!({"status": "error", "reason": "Resource was not found."})
@@ -113,7 +118,7 @@ async fn main() {
                 delete_rustacean
             ],
         )
-        .register("/", catchers![not_found])
+        .register("/", catchers![not_found, unauthorized])
         .launch()
         .await
         .unwrap();
