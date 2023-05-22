@@ -5,9 +5,13 @@ extern crate rocket;
 mod auth;
 use rocket::response::status;
 use rocket::serde::json::{json, Value};
+use rocket_sync_db_pools::database;
+
+#[database("sqlite")]
+struct DbConn(diesel::SqliteConnection);
 
 #[get("/rustaceans")]
-fn get_rustaceans(_auth: auth::BasicAuth) -> Value {
+fn get_rustaceans(_auth: auth::BasicAuth, db: DbConn) -> Value {
     json!([{ "id": 1, "name": "John Doe" }, { "id": 2, "name": "John Doe again" }])
 }
 
