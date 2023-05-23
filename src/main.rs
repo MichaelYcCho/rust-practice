@@ -3,16 +3,35 @@
 extern crate rocket;
 
 mod auth;
+mod models;
+mod schema;
+
+use auth::BasicAuth;
+use diesel::prelude::*;
 use rocket::response::status;
 use rocket::serde::json::{json, Value};
 use rocket_sync_db_pools::database;
+use schema::rustaceans;
+use models::Rustacean;
 
 #[database("sqlite")]
 struct DbConn(diesel::SqliteConnection);
 
 #[get("/rustaceans")]
-fn get_rustaceans(_auth: auth::BasicAuth, _db: DbConn) -> Value {
-    json!([{ "id": 1, "name": "John Doe" }, { "id": 2, "name": "John Doe again" }])
+// db.run()은 async 함수이므로 async fn으로 선언한다.
+async fn get_rustaceans(_auth: BasicAuth, db: DbConn) -> Value {
+    // 이 상태에서의 db는 connection이 아닌 pool이다. pool에서 연결을 하기 위해 선 run()을 사용한다
+    // c는 connection이다. 이를 통해 db에 접근할 수 있다.
+    db.run(|c| {
+        // json의 양을 모두 로드하면 Ram이 부족할지모르니 일단 1000개만 불러보자
+        let rustaceans = rustaceans::table
+            .order(rustaceans::id.desc())
+            .limit(1000)
+            .load::<Rustacean>(c)
+            .expect("DB error");
+        json!(rustaceans)
+    })
+    .await
 }
 
 // 기본적으로 <id>가 매개변수명이다. fn의 매개인자와 일치해야 한다.
