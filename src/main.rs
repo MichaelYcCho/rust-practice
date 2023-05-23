@@ -11,7 +11,7 @@ use rocket_sync_db_pools::database;
 struct DbConn(diesel::SqliteConnection);
 
 #[get("/rustaceans")]
-fn get_rustaceans(_auth: auth::BasicAuth, db: DbConn) -> Value {
+fn get_rustaceans(_auth: auth::BasicAuth, _db: DbConn) -> Value {
     json!([{ "id": 1, "name": "John Doe" }, { "id": 2, "name": "John Doe again" }])
 }
 
@@ -23,7 +23,7 @@ fn view_rustacean(id: i32, _auth: auth::BasicAuth) -> Value {
 }
 #[post("/rustaceans", format = "json")]
 fn create_rustacean(_auth: auth::BasicAuth) -> Value {
-    json!({"id": 3, "name": "John Doe", "email": "john@doe.com"})
+    json!({"id": 3, "nam e": "John Doe", "email": "john@doe.com"})
 }
 #[put("/rustaceans/<id>", format = "json")]
 fn update_rustacean(id: i32, _auth: auth::BasicAuth) -> Value {
@@ -60,6 +60,7 @@ async fn main() {
             ],
         )
         .register("/", catchers![not_found, unauthorized])
+        .attach(DbConn::fairing())
         .launch()
         .await
         .unwrap();
