@@ -1,11 +1,13 @@
 use std::collections::HashMap;
 
 // Request 구조체의 수명 buf와 같은 수명을 가진다.
+#[derive(Debug)]
 pub struct QueryString<'buf> {
     data: HashMap<&'buf str, Value<'buf>>,
 }
 
 // 힙 할당 동적 Array = 백터(Vec) -> 정해지지 않은 수의 Element를 가질 수 있다.
+#[derive(Debug)]
 pub enum Value<'buf> {
     Single(&'buf str),
     Multiple(Vec<&'buf str>),
