@@ -8,11 +8,11 @@ mod schema;
 
 use auth::BasicAuth;
 use diesel::prelude::*;
+use models::{NewRustacean, Rustacean};
 use rocket::response::status;
-use rocket::serde::json::{Value, json, Json};
+use rocket::serde::json::{json, Json, Value};
 use rocket_sync_db_pools::database;
 use schema::rustaceans;
-use models::{Rustacean, NewRustacean};
 
 #[database("sqlite")]
 struct DbConn(diesel::SqliteConnection);
@@ -40,18 +40,21 @@ async fn get_rustaceans(db: DbConn) -> Value {
 fn view_rustacean(id: i32, _auth: auth::BasicAuth) -> Value {
     json!({"id": id, "name": "John Doe", "email": "john@doe.com"})
 }
-#[post("/rustaceans", format = "json", data= "<new_rustacean>")]
-async fn create_rustacean(_auth: BasicAuth, db: DbConn, new_rustacean: Json<NewRustacean>) -> Value {
+#[post("/rustaceans", format = "json", data = "<new_rustacean>")]
+async fn create_rustacean(
+    _auth: BasicAuth,
+    db: DbConn,
+    new_rustacean: Json<NewRustacean>,
+) -> Value {
     db.run(|c| {
         let result = diesel::insert_into(rustaceans::table)
-             // into_inner은 기본적으로 unwrap()을 호출한다.
-             .values(new_rustacean.into_inner())
-             .execute(c)
-             .expect("DB error when inserting");
-            json!(result)
-    }).await
-    
-
+            // into_inner은 기본적으로 unwrap()을 호출한다.
+            .values(new_rustacean.into_inner())
+            .execute(c)
+            .expect("DB error when inserting");
+        json!(result)
+    })
+    .await
 }
 #[put("/rustaceans/<id>", format = "json")]
 fn update_rustacean(id: i32, _auth: auth::BasicAuth) -> Value {
@@ -95,6 +98,6 @@ async fn main() {
 }
 
 /*
-curl 127.0.0.1:8000/rustaceans -H 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==' -d '{"name": "John Doe", "email": "foo@bar.com"}' -H 'Content-Type: application/json' 
+curl 127.0.0.1:8000/rustaceans -H 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==' -d '{"name": "John Doe", "email": "foo@bar.com"}' -H 'Content-Type: application/json'
 
  */
