@@ -99,5 +99,5 @@ async fn main() {
 
 /*
 curl 127.0.0.1:8000/rustaceans -H 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==' -d '{"name": "John Doe", "email": "foo@bar.com"}' -H 'Content-Type: application/json'
-
+curl 127.0.0.1:8000/rustaceans -H 'Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=='
  */
