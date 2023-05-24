@@ -19,7 +19,7 @@ struct DbConn(diesel::SqliteConnection);
 
 #[get("/rustaceans")]
 // db.run()은 async 함수이므로 async fn으로 선언한다.
-async fn get_rustaceans(db: DbConn) -> Value {
+async fn get_rustaceans(_auth: BasicAuth, db: DbConn) -> Value {
     // 이 상태에서의 db는 connection이 아닌 pool이다. pool에서 연결을 하기 위해 선 run()을 사용한다
     // c는 connection이다. 이를 통해 db에 접근할 수 있다.
     db.run(|c| {
