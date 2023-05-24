@@ -1,5 +1,7 @@
-use diesel::Queryable;
-use serde::Serialize;
+use diesel::{Queryable, Insertable};
+use serde::{Serialize, Deserialize};
+use crate::schema::rustaceans;
+
 
 #[derive(Serialize, Queryable)]
 pub struct Rustacean {
@@ -7,4 +9,12 @@ pub struct Rustacean {
     pub name: String,
     pub email: String,
     pub created_at: String,
+}
+
+// 삽입 가능한 속성이 필요, 또한 Diesel attr을 통해 어떤 테이블에 삽입할지 명시 해줘야 한다.
+#[derive(Deserialize, Insertable)]
+#[diesel(table_name = rustaceans)]
+pub struct NewRustacean{
+    pub name: String,
+    pub email: String,
 }
